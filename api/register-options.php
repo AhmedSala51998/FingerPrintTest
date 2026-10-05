@@ -45,6 +45,6 @@ try {
 
     jsonResponse([
         'success' => false,
-        'message' => $e->getMessage()س
+        'message' => $e->getMessage()
     ], 500);
 }

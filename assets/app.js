@@ -1,76 +1,110 @@
-function bufferToBase64(buffer) {
-    const bytes = new Uint8Array(buffer);
-    let binary = '';
-    for (const byte of bytes) binary += String.fromCharCode(byte);
-    return btoa(binary);
-}
+function base64ToBuffer(base64) {
+    // يدعم Base64 و Base64URL
+    base64 = base64.replace(/-/g, '+').replace(/_/g, '/');
 
-function base64ToBuffer(value) {
-    const binary = atob(value);
+    while (base64.length % 4) {
+        base64 += '=';
+    }
+
+    const binary = atob(base64);
     const bytes = new Uint8Array(binary.length);
+
     for (let i = 0; i < binary.length; i++) {
         bytes[i] = binary.charCodeAt(i);
     }
+
     return bytes.buffer;
 }
 
-function recursiveBase64ToArrayBuffer(obj) {
-    if (!obj || typeof obj !== 'object') return;
+function bufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
 
-    for (const key of Object.keys(obj)) {
-        const value = obj[key];
-
-        if (typeof value === 'string') {
-            // lbuchs WebAuthn serializes binary values as base64 strings.
-            // Only convert values that are clearly binary WebAuthn fields.
-            if (['challenge', 'id', 'userHandle'].includes(key)) {
-                try { obj[key] = base64ToBuffer(value); } catch (_) {}
-            }
-        } else if (value && typeof value === 'object') {
-            recursiveBase64ToArrayBuffer(value);
-        }
+    for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
     }
+
+    return btoa(binary);
 }
 
-function preparePublicKey(publicKey) {
-    recursiveBase64ToArrayBuffer(publicKey);
-    return publicKey;
+function preparePublicKey(options) {
+
+    // challenge
+    if (typeof options.challenge === 'string') {
+        options.challenge = base64ToBuffer(options.challenge);
+    }
+
+    // user.id في التسجيل
+    if (options.user && typeof options.user.id === 'string') {
+        options.user.id = base64ToBuffer(options.user.id);
+    }
+
+    // excludeCredentials
+    if (Array.isArray(options.excludeCredentials)) {
+        options.excludeCredentials =
+            options.excludeCredentials.map(credential => ({
+                ...credential,
+                type: 'public-key',
+                id: typeof credential.id === 'string'
+                    ? base64ToBuffer(credential.id)
+                    : credential.id
+            }));
+    }
+
+    // allowCredentials
+    if (Array.isArray(options.allowCredentials)) {
+        options.allowCredentials =
+            options.allowCredentials.map(credential => ({
+                ...credential,
+                type: 'public-key',
+                id: typeof credential.id === 'string'
+                    ? base64ToBuffer(credential.id)
+                    : credential.id
+            }));
+    }
+
+    return options;
 }
 
 async function postJson(url, data) {
+
     const response = await fetch(url, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+            'Content-Type': 'application/json'
+        },
         credentials: 'same-origin',
         body: JSON.stringify(data)
     });
 
-    const json = await response.json().catch(() => ({
-        success: false,
-        message: 'استجابة غير صالحة من الخادم.'
-    }));
+    const result = await response.json();
 
-    if (!response.ok && json.success !== false) {
-        throw new Error('حدث خطأ في الخادم.');
+    if (!response.ok) {
+        throw new Error(result.message || 'حدث خطأ في الخادم.');
     }
 
-    return json;
+    return result;
 }
 
 function friendlyError(error) {
-    const msg = error?.message || String(error);
 
-    if (!window.PublicKeyCredential || !navigator.credentials) {
-        return 'هذا المتصفح لا يدعم البصمة عبر WebAuthn.';
+    console.error(error);
+
+    if (error.name === 'NotAllowedError') {
+        return 'تم إلغاء البصمة أو لم يتم التحقق منها.';
     }
 
-    if (msg.includes('NotAllowedError')) {
-        return 'تم إلغاء البصمة أو لم تكتمل عملية التحقق.';
+    if (error.name === 'SecurityError') {
+        return 'يجب فتح الموقع عبر HTTPS.';
     }
 
-    if (msg.includes('SecurityError')) {
-        return 'الموقع يحتاج HTTPS صحيح، وتأكد أن الدومين مضبوط في إعدادات المشروع.';
+    if (error.name === 'InvalidStateError') {
+        return 'البصمة مسجلة مسبقًا على هذا الجهاز.';
     }
 
-    return msg;
+    if (error.name === 'NotSupportedError') {
+        return 'هذا الجهاز أو المتصفح لا يدعم تسجيل الدخول بالبصمة.';
+    }
+
+    return error.message || 'حدث خطأ أثناء التحقق من البصمة.';
 }

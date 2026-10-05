@@ -34,7 +34,10 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
 
         const options = await postJson('api/login-options.php', {});
         const publicKey = preparePublicKey(options.publicKey);
-        const credential = await navigator.credentials.get({ publicKey });
+
+        const credential = await navigator.credentials.get({
+            publicKey: publicKey
+        });
 
         const payload = {
             id: bufferToBase64(credential.rawId),

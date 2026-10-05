@@ -42,7 +42,10 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
 
         const options = await postJson('api/register-options.php', { name });
         const publicKey = preparePublicKey(options.publicKey);
-        const credential = await navigator.credentials.create({ publicKey });
+
+        const credential = await navigator.credentials.create({
+            publicKey: publicKey
+        });
 
         const payload = {
             clientDataJSON: bufferToBase64(credential.response.clientDataJSON),

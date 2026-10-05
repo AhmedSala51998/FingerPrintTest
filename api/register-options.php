@@ -42,5 +42,9 @@ try {
     echo json_encode($args, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 } catch (Throwable $e) {
     db()->prepare('DELETE FROM users WHERE id = ?')->execute([$userId]);
-    jsonResponse(['success' => false, 'message' => 'تعذر بدء تسجيل البصمة.'], 500);
+
+    jsonResponse([
+        'success' => false,
+        'message' => $e->getMessage()س
+    ], 500);
 }

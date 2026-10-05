@@ -1,0 +1,24 @@
+CREATE DATABASE IF NOT EXISTS fingerprint_login
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+USE fingerprint_login;
+
+CREATE TABLE IF NOT EXISTS users (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    user_handle VARBINARY(64) NOT NULL UNIQUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS credentials (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    credential_id VARBINARY(1024) NOT NULL UNIQUE,
+    credential_public_key TEXT NOT NULL,
+    signature_counter BIGINT UNSIGNED NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_login_at TIMESTAMP NULL DEFAULT NULL,
+    CONSTRAINT fk_credentials_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB;

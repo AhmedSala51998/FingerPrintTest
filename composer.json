@@ -1,0 +1,6 @@
+{
+  "require": {
+    "php": ">=8.0",
+    "lbuchs/webauthn": "2.2.0"
+  }
+}

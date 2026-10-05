@@ -1,0 +1,16 @@
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f5f7fb;font-family:Arial,Tahoma,sans-serif;color:#172033;padding:20px}
+.card{width:min(430px,100%);background:#fff;border-radius:24px;padding:34px 26px;box-shadow:0 15px 50px rgba(20,35,70,.10);text-align:center}
+.finger{font-size:64px;margin-bottom:8px}
+.success{width:70px;height:70px;margin:0 auto 15px;border-radius:50%;background:#e9f8ef;color:#159447;font-size:45px;line-height:70px}
+h1{font-size:28px;margin:8px 0 10px}
+.muted{color:#6c7586;line-height:1.8}
+label{display:block;text-align:right;margin:20px 0 8px;font-weight:bold}
+input{width:100%;padding:15px;border:1px solid #d8deea;border-radius:13px;font-size:17px;outline:none}
+input:focus{border-color:#4263eb}
+button{width:100%;border:0;border-radius:14px;padding:16px;font-size:17px;font-weight:bold;cursor:pointer;margin-top:20px}
+button.primary{background:#1e40af;color:white}
+button:disabled{opacity:.55;cursor:not-allowed}
+.message{min-height:28px;margin-top:16px;color:#b42318;line-height:1.6}
+.link{display:inline-block;margin-top:20px;color:#1e40af;text-decoration:none}
+@media(max-width:480px){.card{padding:28px 20px}}

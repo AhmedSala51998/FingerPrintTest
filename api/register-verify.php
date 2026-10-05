@@ -13,8 +13,25 @@ if (!$state) {
 $input = json_decode(file_get_contents('php://input'), true) ?: [];
 
 try {
-    $clientDataJSON = base64_decode((string)($input['clientDataJSON'] ?? ''), true);
-    $attestationObject = base64_decode((string)($input['attestationObject'] ?? ''), true);
+    function base64url_decode(string $data): string|false
+    {
+        $data = strtr($data, '-_', '+/');
+        $padding = strlen($data) % 4;
+
+        if ($padding) {
+            $data .= str_repeat('=', 4 - $padding);
+        }
+
+        return base64_decode($data, true);
+    }
+
+    $clientDataJSON = base64url_decode(
+        (string)($input['clientDataJSON'] ?? '')
+    );
+
+    $attestationObject = base64url_decode(
+        (string)($input['attestationObject'] ?? '')
+    );
     $challenge = base64_decode((string)$state['challenge'], true);
 
     if ($clientDataJSON === false || $attestationObject === false || $challenge === false) {

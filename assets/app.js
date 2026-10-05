@@ -24,7 +24,10 @@ function bufferToBase64(buffer) {
         binary += String.fromCharCode(bytes[i]);
     }
 
-    return btoa(binary);
+    return btoa(binary)
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/g, '');
 }
 
 function preparePublicKey(options) {

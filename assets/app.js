@@ -112,8 +112,4 @@ function friendlyError(error) {
 async function ensureBiometricSupport() {
     if (!window.isSecureContext) throw new Error('افتح الموقع عبر HTTPS لتشغيل Face ID أو Touch ID. رابط HTTP الخاص بالكمبيوتر لا يعمل على الآيفون.');
     if (!window.PublicKeyCredential || !navigator.credentials) throw new Error('المتصفح لا يدعم مفاتيح المرور. جرّب Safari على الآيفون.');
-    if (typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function'
-        && !await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()) {
-        throw new Error('لا تتوفر وسيلة تحقق على الجهاز. فعّل Face ID أو Touch ID ورمز قفل الجهاز، ثم حاول مرة أخرى.');
-    }
 }

@@ -15,12 +15,8 @@ if ($name === '' || mb_strlen($name) > 150) {
 $userHandle = random_bytes(32);
 $userHandleB64 = base64_encode($userHandle);
 
-$stmt = db()->prepare('INSERT INTO users (name, user_handle) VALUES (?, ?)');
-$stmt->execute([$name, $userHandle]);
-$userId = (int)db()->lastInsertId();
-
 try {
-    $webAuthn = new \lbuchs\WebAuthn\WebAuthn(APP_NAME, rpId());
+    $webAuthn = new \lbuchs\WebAuthn\WebAuthn(APP_NAME, rpId(), null, true);
 
     $args = $webAuthn->getCreateArgs(
         $userHandle,
@@ -32,16 +28,17 @@ try {
         false
     );
 
+    $args->publicKey->attestation = 'none';
     $_SESSION['registration'] = [
-        'user_id' => $userId,
+        'name' => $name,
+        'issued_at' => time(),
         'user_handle' => $userHandleB64,
-        'challenge' => base64_encode($webAuthn->getChallenge()),
+        'challenge' => base64_encode($webAuthn->getChallenge()->getBinaryString()),
     ];
 
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode($args, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 } catch (Throwable $e) {
-    db()->prepare('DELETE FROM users WHERE id = ?')->execute([$userId]);
 
     jsonResponse([
         'success' => false,

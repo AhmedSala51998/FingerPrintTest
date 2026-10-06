@@ -6,7 +6,7 @@ requirePost();
 requireHttps();
 
 try {
-    $webAuthn = new \lbuchs\WebAuthn\WebAuthn(APP_NAME, rpId());
+    $webAuthn = new \lbuchs\WebAuthn\WebAuthn(APP_NAME, rpId(), null, true);
 
     /*
      * لا نرسل allowCredentials.
@@ -23,7 +23,8 @@ try {
         true
     );
 
-    $_SESSION['login_challenge'] = base64_encode($webAuthn->getChallenge());
+    $_SESSION['login_issued_at'] = time();
+    $_SESSION['login_challenge'] = base64_encode($webAuthn->getChallenge()->getBinaryString());
 
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode($args, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

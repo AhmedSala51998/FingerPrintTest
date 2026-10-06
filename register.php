@@ -18,7 +18,7 @@ require_once __DIR__ . '/bootstrap.php';
     <label for="name">اسم الشخص</label>
     <input id="name" type="text" maxlength="150" placeholder="مثال: أحمد محمد" autocomplete="name">
 
-    <button id="registerBtn" class="primary">تسجيل البصمة</button>
+    <button id="registerBtn" class="primary">تسجيل بصمة الإصبع أو Face ID</button>
     <div id="message" class="message"></div>
 
     <a class="link" href="index.php">العودة لتسجيل الدخول</a>
@@ -38,6 +38,7 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
 
     try {
         button.disabled = true;
+        await ensureBiometricSupport();
         message.textContent = 'اتبع تعليمات الهاتف وسجّل البصمة...';
 
         const options = await postJson('api/register-options.php', { name });

@@ -1,4 +1,5 @@
 function base64ToBuffer(base64) {
+    if (base64.startsWith('=?BINARY?B?') && base64.endsWith('?=')) base64 = base64.slice(11, -2);
     // يدعم Base64 و Base64URL
     base64 = base64.replace(/-/g, '+').replace(/_/g, '/');
 
@@ -107,4 +108,12 @@ function friendlyError(error) {
     }
 
     return error.message || 'حدث خطأ أثناء التحقق من البصمة.';
+}
+async function ensureBiometricSupport() {
+    if (!window.isSecureContext) throw new Error('افتح الموقع عبر HTTPS لتشغيل Face ID أو Touch ID. رابط HTTP الخاص بالكمبيوتر لا يعمل على الآيفون.');
+    if (!window.PublicKeyCredential || !navigator.credentials) throw new Error('المتصفح لا يدعم مفاتيح المرور. جرّب Safari على الآيفون.');
+    if (typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function'
+        && !await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()) {
+        throw new Error('لا تتوفر وسيلة تحقق على الجهاز. فعّل Face ID أو Touch ID ورمز قفل الجهاز، ثم حاول مرة أخرى.');
+    }
 }

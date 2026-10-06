@@ -6,7 +6,9 @@ requirePost();
 requireHttps();
 
 $challengeB64 = $_SESSION['login_challenge'] ?? null;
-if (!$challengeB64) {
+$issuedAt = (int)($_SESSION['login_issued_at'] ?? 0);
+unset($_SESSION['login_challenge'], $_SESSION['login_issued_at']);
+if (!$challengeB64 || time() - $issuedAt > 300) {
     jsonResponse(['success' => false, 'message' => 'انتهت جلسة الدخول. أعد المحاولة.'], 400);
 }
 
@@ -44,7 +46,8 @@ try {
         throw new RuntimeException('هوية المستخدم لا تتطابق.');
     }
 
-    $webAuthn = new \lbuchs\WebAuthn\WebAuthn(APP_NAME, rpId());
+    validateClientOrigin($clientDataJSON);
+    $webAuthn = new \lbuchs\WebAuthn\WebAuthn(APP_NAME, rpId(), null, true);
 
     $ok = $webAuthn->processGet(
         $clientDataJSON,
@@ -76,6 +79,7 @@ try {
         $update->execute([(int)$credential['credential_row_id']]);
     }
 
+    session_regenerate_id(true);
     $_SESSION['logged_in_user_id'] = (int)$credential['user_id'];
     unset($_SESSION['login_challenge']);
 

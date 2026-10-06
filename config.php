@@ -80,3 +80,15 @@ function requireHttps(): void
         ], 400);
     }
 }
+
+// Match the complete web origin, including port, before accepting a signature.
+function validateClientOrigin(string $clientDataJSON): void
+{
+    $client = json_decode($clientDataJSON, true, 32, JSON_THROW_ON_ERROR);
+    $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+    $expected = ($https ? 'https://' : 'http://') . strtolower($_SERVER['HTTP_HOST'] ?? 'localhost');
+    if (!isset($client['origin']) || !hash_equals($expected, strtolower($client['origin'])) || !empty($client['crossOrigin'])) {
+        throw new RuntimeException('مصدر طلب التحقق غير صحيح.');
+    }
+}

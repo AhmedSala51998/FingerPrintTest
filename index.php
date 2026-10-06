@@ -16,7 +16,7 @@ require_once __DIR__ . '/bootstrap.php';
     <h1>تسجيل الدخول</h1>
     <p class="muted">استخدم بصمة الإصبع أو Face ID أو قفل الجهاز.</p>
 
-    <button id="loginBtn" class="primary">تسجيل الدخول بالبصمة</button>
+    <button id="loginBtn" class="primary">الدخول ببصمة الإصبع أو Face ID</button>
     <div id="message" class="message"></div>
 
     <a class="link" href="register.php">إضافة شخص جديد</a>
@@ -30,6 +30,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
 
     try {
         button.disabled = true;
+        await ensureBiometricSupport();
         message.textContent = 'جاري التحقق من البصمة...';
 
         const options = await postJson('api/login-options.php', {});
